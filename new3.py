@@ -7,7 +7,9 @@ import matplotlib.pyplot as plt
 from ultralytics import YOLO
 from tqdm import tqdm
 
-torch.device('cpu')
+device = torch.device('cpu')
+
+# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 # Конфигурация путей
 TRAIN_ANNOTATIONS = r"C:\Users\User\PycharmProjects" \
@@ -190,7 +192,7 @@ results = model.train(
     optimizer='AdamW',
     lr0=0.001,
     augment=True  # Аугментация данных
-)
+).to(device)
 
 # =============================================
 # 4. Валидация и визуализация результатов
