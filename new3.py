@@ -6,8 +6,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from ultralytics import YOLO
 from tqdm import tqdm
-import sklearn.metrics.precision_score
-import sklearn.metrics.recall_score
 
 # Конфигурация путей
 TRAIN_ANNOTATIONS = r"C:\Users\User\PycharmProjects" \
