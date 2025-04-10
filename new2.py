@@ -8,6 +8,8 @@ from snorkel.labeling.model import LabelModel
 from ultralytics import YOLO
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
+import sklearn.metrics.precision_score
+import sklearn.metrics.recall_score
 
 
 # =============================================

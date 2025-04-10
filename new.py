@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from snorkel.labeling import labeling_function, PandasLFApplier
 from snorkel.labeling.model import LabelModel
 from joblib import dump
+import sklearn.metrics.precision_score
+import sklearn.metrics.recall_score
 
 # Загрузка аннотаций
 with open(

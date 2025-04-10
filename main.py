@@ -4,6 +4,8 @@ import pandas as pd
 import json
 from snorkel.labeling import labeling_function, PandasLFApplier
 from snorkel.labeling.model import LabelModel
+import sklearn.metrics.precision_score
+import sklearn.metrics.recall_score
 
 with open('C:\\Users\\User\\PycharmProjects\\detectionAndSegmentation\\475_file_train\\annotations'
           '\\instances_default.json', "r") as f:
@@ -73,3 +75,6 @@ L_train = applier.apply(df)
 label_model = LabelModel()
 label_model.fit(L_train)
 df["label"] = label_model.predict(L_train)
+
+precision = precision_score(L_val, label_model.predict)
+recall = recall_score(L_val, label_model.predict)

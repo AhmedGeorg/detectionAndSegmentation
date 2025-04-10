@@ -6,10 +6,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from ultralytics import YOLO
 from tqdm import tqdm
-
-device = torch.device('cpu')
-
-# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+import sklearn.metrics.precision_score
+import sklearn.metrics.recall_score
 
 # Конфигурация путей
 TRAIN_ANNOTATIONS = r"C:\Users\User\PycharmProjects" \
@@ -183,7 +181,7 @@ results = model.train(
     epochs=100,
     imgsz=640,
     batch=8,
-    device="0",  # Используем GPU
+    device="cpu",  # Используем GPU
     name="fire_smoke_segmentation",
     patience=15,  # Ранняя остановка
     save=True,
@@ -192,7 +190,7 @@ results = model.train(
     optimizer='AdamW',
     lr0=0.001,
     augment=True  # Аугментация данных
-).to(device)
+)
 
 # =============================================
 # 4. Валидация и визуализация результатов
