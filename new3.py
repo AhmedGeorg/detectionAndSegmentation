@@ -135,13 +135,22 @@ def prepare_yolo_dataset(df, output_dir, dataset_type):
         label_name = os.path.splitext(img_name)[0] + '.txt'
         label_path = os.path.join(labels_dir, label_name)
 
+        allowed_classes = {1, 2}  # Какие классы оставляем (исходные COCO классы)
+
         with open(label_path, 'w') as f:
             height, width = img.shape[:2]
             for _, row in group.iterrows():
-                # Конвертируем bbox в YOLO формат
+                original_class = row['category_id']
+
+                # Пропускаем классы не из allowed_classes
+                if original_class not in allowed_classes:
+                    continue
+
+                # Преобразуем классы 1 → 0, 2 → 1
+                new_class = 0 if original_class == 1 else 1
+
                 yolo_bbox = coco_to_yolo_bbox(row['bbox'], width, height)
-                # YOLO использует индексы классов с 0
-                line = f"{row['category_id'] - 1} {' '.join(map(str, yolo_bbox))}\n"
+                line = f"{new_class} {' '.join(map(str, yolo_bbox))}\n"
                 f.write(line)
 
 
@@ -154,9 +163,8 @@ prepare_yolo_dataset(val_df, "yolo_dataset", "val")
 
 # Создаем dataset.yaml
 yolo_config = f"""
-path: ./yolo_dataset
-train: images/train
-val: images/val
+train: C:/Users/User/PycharmProjects/detectionAndSegmentation/yolo_dataset/images/train
+val: C:/Users/User/PycharmProjects/detectionAndSegmentation/yolo_dataset/images/val
 
 names:
   0: fire
@@ -171,7 +179,7 @@ with open("yolo_dataset/dataset.yaml", "w") as f:
 # =============================================
 
 print("\nИнициализация YOLO модели...")
-model = YOLO("yolov8n-seg.pt")  # Модель для сегментации
+model = YOLO("yolov8n.pt")
 
 print("\nНачало обучения...")
 results = model.train(
