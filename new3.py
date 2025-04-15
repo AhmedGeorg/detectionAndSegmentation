@@ -179,17 +179,19 @@ with open("yolo_dataset/dataset.yaml", "w") as f:
 # =============================================
 
 print("\nИнициализация YOLO модели...")
-model = YOLO("yolov8n.pt")
+model1 = YOLO("yolov8n.pt")
+model2 = YOLO("yolov8n-seg.pt")
 
 print("\nНачало обучения...")
-results = model.train(
+results = [model1.train(
     data="yolo_dataset/dataset.yaml",
     epochs=100,
     imgsz=640,
     batch=8,
-    device="cpu",  # Используем GPU
-    name="fire_smoke_segmentation",
+    device="cpu",  # Используем CPU
+    name="fire_smoke_detection",
     patience=15,  # Ранняя остановка
+    conf=0.1,
     save=True,
     save_period=10,
     workers=4,
@@ -203,23 +205,47 @@ results = model.train(
     hsv_v=0.4,
     flipud=0.5,  # Вертикальное отражение
     fliplr=0.5   # Горизонтальное отражение
-)
+), model2.train(
+    data="yolo_dataset/dataset.yaml",
+    epochs=100,
+    imgsz=640,
+    batch=8,
+    device="cpu",
+    name="fire_smoke_segmentation",
+    lr0=0.01,
+    lrf=0.01,
+    momentum=0.937,
+    weight_decay=0.0005,
+    warmup_epochs=3,
+    box=7.5,
+    cls=0.5,
+    dfl=1.5,
+    pose=12.0,
+    hsv_h=0.015,
+    hsv_s=0.7,
+    hsv_v=0.4,
+    fliplr=0.5,
+    mixup=0.1,
+)]
 
 # =============================================
 # 4. Валидация и визуализация результатов
 # =============================================
 
-print("\nЗагрузка лучшей обученной модели...")
-best_model = YOLO("runs/segment/fire_smoke_segmentation/weights/best.pt")
+print("\nЗагрузка лучших обученных моделей...")
+best_model1 = YOLO("runs/segment/fire_smoke_segmentation/weights/best.pt")
+best_model2 = YOLO("runs/detect/fire_smoke_detection/weights/best.pt")
 
 # Валидация на val данных
 print("\nОценка модели на val данных...")
-metrics = best_model.val()
+metrics = best_model1.val()
+print(f"Precision: {metrics.box.mp}, Recall: {metrics.box.mr}, mAP50: {metrics.box.map75}")
+metrics = best_model2.val()
 print(f"Precision: {metrics.box.mp}, Recall: {metrics.box.mr}, mAP50: {metrics.box.map75}")
 
 
 # Визуализация результатов на val изображениях
-def visualize_predictions(model, val_df, num_samples=5):
+def visualize_predictions(model1, model2, val_df, num_samples=5):
     """Визуализация предсказаний на val данных"""
     sample_df = val_df.sample(min(num_samples, len(val_df)))
 
@@ -229,7 +255,7 @@ def visualize_predictions(model, val_df, num_samples=5):
             continue
 
         # Предсказание
-        results = model(img_path)
+        results = [model1(img_path), model2(img_path)]
 
         # Визуализация
         plt.figure(figsize=(15, 8))
@@ -262,11 +288,12 @@ def visualize_predictions(model, val_df, num_samples=5):
 
 
 print("\nВизуализация результатов на val данных...")
-visualize_predictions(best_model, val_df, num_samples=5)
+visualize_predictions(best_model1, best_model2, val_df, num_samples=5)
 
 # Сохранение модели в ONNX формате
-print("\nЭкспорт модели в ONNX формат...")
-best_model.export(format="onnx")
+print("\nЭкспорт моделей в ONNX формат...")
+best_model1.export(format="onnx")
+best_model2.export(format="onnx")
 print("Модель успешно экспортирована в ONNX формат")
 
 print("\nОбучение и валидация завершены!")
