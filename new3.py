@@ -194,8 +194,15 @@ results = model.train(
     save_period=10,
     workers=4,
     optimizer='AdamW',
-    lr0=0.001,
-    augment=True  # Аугментация данных
+    lr0=1e-40,
+    augment=True,  # Аугментация данных
+    mixup=0.2,  # Добавляем mixup аугментацию
+    dropout=0.1,  # Регуляризация
+    hsv_h=0.015,  # Цветовая аугментация
+    hsv_s=0.7,
+    hsv_v=0.4,
+    flipud=0.5,  # Вертикальное отражение
+    fliplr=0.5   # Горизонтальное отражение
 )
 
 # =============================================
@@ -208,7 +215,7 @@ best_model = YOLO("runs/segment/fire_smoke_segmentation/weights/best.pt")
 # Валидация на val данных
 print("\nОценка модели на val данных...")
 metrics = best_model.val()
-print(metrics)
+print(f"Precision: {metrics.box.mp}, Recall: {metrics.box.mr}, mAP50: {metrics.box.map75}")
 
 
 # Визуализация результатов на val изображениях
